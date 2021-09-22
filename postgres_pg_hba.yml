@@ -1,0 +1,20 @@
+---
+  # - PostgreSQL related tasks
+  - name: Install PostgreSQL
+    hosts: postgresdb
+    become: yes
+    become_user: root
+    tasks:
+      - name: Grant users joe and simon access to databases sales and logistics from ipv6 localhost ::1/128 using peer authentication
+        community.postgresql.postgresql_pg_hba:
+          dest: /var/lib/postgresql/pg_hba.conf
+          contype: host
+          users: joe,simon
+          source: ::1
+          databases: sales
+          create: true
+      - name: Install ntpdate
+        ansible.builtin.package:
+          name: ntpdate
+          state: present
+
