@@ -9,7 +9,7 @@
         community.postgresql.postgresql_pg_hba:
           dest: /var/lib/postgresql/pg_hba.conf
           contype: host
-          users: joe,simon
+          users: repmgr,backup
           source: ::1
           databases: sales
           create: true
@@ -17,4 +17,3 @@
         ansible.builtin.package:
           name: ntpdate
           state: present
-
