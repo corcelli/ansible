@@ -3,14 +3,15 @@
   become: true
   collections:
     - community.zabbix
-
-- name: Install Repo-Zabbix
+  tasks:
+  - name: Install Repo-Zabbix
     apt:
-      deb: wget https://repo.zabbix.com/zabbix/5.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.4-1+ubuntu18.04_all.deb
+      deb: https://repo.zabbix.com/zabbix/5.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.4-1+ubuntu18.04_all.deb
+  - name: Removendo Zabbix-Agent
+    apt:
+      name: zabbix-agent
+      state: present
 
-- name: install zabbix 5.4
-      package:
-        name: "{{ item }}"
-        state: present
-      loop:
-        - zabbix-agent
+  - name: Registro de sistema operacional
+    shell: lsb_release -si | tr 'A-Z' 'a-z'
+    register: SO
