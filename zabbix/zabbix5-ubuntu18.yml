@@ -4,12 +4,12 @@
   collections:
     - community.zabbix
   tasks:
-  - name: Registro de sistema operacional para APT
+  - name: Pegando variavel para registro de sistema operacional para PGDG
     shell: lsb_release -cs
     register: SOAPT
-  - name: This command will change the working directory to somedir/
+  - name: Configurando repositorio PGDG
     shell: "echo deb http://apt.postgresql.org/pub/repos/apt {{SOAPT.stdout}}-pgdg main > /etc/apt/sources.list.d/pgdg.list"
-  - name: Install Repo-Zabbix-APT
+  - name: Install Repositoria para Zabbix
     apt:
       deb: https://repo.zabbix.com/zabbix/5.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.4-1+ubuntu18.04_all.deb
       update_cache: True
@@ -21,14 +21,15 @@
   - name: Registro de sistema operacional
     shell: lsb_release -si | tr 'A-Z' 'a-z'
     register: SO
-  - name: install postgres
+  - name: install PostgreSQL12 e derivados
     apt:
       name: "{{ item }}"
       state: present
     loop:
       - postgresql-12
-      - postgresql-12-server
-      - postgresql-12-llvmjit
+      - postgresql-12-repmgr
+      - pgbouncer
+      - pgstat
 
 
 
