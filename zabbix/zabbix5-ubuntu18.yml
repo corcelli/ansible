@@ -7,8 +7,10 @@
   - name: Pegando variavel para registro de sistema operacional para PGDG
     shell: lsb_release -cs
     register: SOAPT
-  - name: Configurando repositorio PGDG
-    shell: "echo deb http://apt.postgresql.org/pub/repos/apt {{SOAPT.stdout}}-pgdg main > /etc/apt/sources.list.d/pgdg.list"
+  - name: Create multiple text file in tmp directory with shell module
+    shell: |       # Multiple commands in Ansible shell module
+      echo "deb http://apt.postgresql.org/pub/repos/apt {{SOAPT.stdout}}-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+      wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
   - name: Install Repositoria para Zabbix
     apt:
       deb: https://repo.zabbix.com/zabbix/5.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.4-1+ubuntu18.04_all.deb
@@ -30,11 +32,3 @@
       - postgresql-12-repmgr
       - pgbouncer
       - pgstat
-
-
-
-#echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
-#wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-#apt-get update
-
-

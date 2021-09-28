@@ -1,0 +1,103 @@
+---
+- hosts: 192.168.1.213
+  become: true
+  collections:
+    - community.zabbix
+  vars_files:
+    - vars.yml
+  tasks:
+  - name: Pegando variavel para registro de sistema operacional para PGDG
+    shell: lsb_release -cs
+    register: SOAPT
+  - name: Create multiple text file in tmp directory with shell module
+    shell: |       # Multiple commands in Ansible shell module
+      echo "deb http://apt.postgresql.org/pub/repos/apt {{SOAPT.stdout}}-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+      wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+  - name: Install Repositoria para Zabbix
+    apt:
+      deb: https://repo.zabbix.com/zabbix/5.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.4-1+ubuntu18.04_all.deb
+      update_cache: True
+  - name: Instalando Zabbix-Agent
+    apt:
+      name: zabbix-agent
+      state: present
+
+  - name: Registro de sistema operacional
+    shell: lsb_release -si | tr 'A-Z' 'a-z'
+    register: SO
+  - name: install PostgreSQL12 e derivados
+    apt:
+      name: "{{ item }}"
+      state: present
+    loop:
+      - postgresql-12
+      - postgresql-12-repmgr
+      - pgbouncer
+      - pgstat
+      - python3-psycopg2
+  
+  - name: restart postgresql
+    service:
+      name: postgresql@12-main.service
+      state: restarted
+      enabled: yes
+
+  - name: "Create app database"
+    postgresql_db:
+      state: present
+      name: "{{ db_name }}"
+    become: yes
+    become_user: postgres
+  - name: "Create db user"
+    postgresql_user:
+      state: present
+      name: "{{ db_user }}"
+      password: "{{ db_password }}"
+    become: yes
+    become_user: postgres
+  - name: "Grant db user access to app db"
+    postgresql_privs:
+      type: database
+      database: "{{ db_name }}"
+      roles: "{{ db_user }}"
+      grant_option: no
+      privs: all
+    become: yes
+    become_user: postgres
+  - name: "Allow md5 connection for the db user"
+    postgresql_pg_hba:
+      dest: "/etc/postgresql/12/main/pg_hba.conf"
+      contype: host
+      databases: all
+      method: md5
+      users: "{{ db_user }}"
+      create: true
+    become: yes
+    become_user: postgres
+  - name: restart postgresql
+    service:
+      name: postgresql@12-main.service
+      state: restarted
+      enabled: yes
+  
+  - name: Set work mem parameter
+    community.postgresql.postgresql_set:
+      name: work_mem
+      value: 32mb
+    register: set
+    become: yes
+    become_user: postgres
+
+  - name: Set work mem parameter
+    community.postgresql.postgresql_set:
+      name: listen_addresses
+      value: '*'
+    register: set
+    become: yes
+    become_user: postgres
+
+  - name: restart postgresql
+    service:
+      name: postgresql@12-main.service
+      state: restarted
+      enabled: yes

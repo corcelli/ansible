@@ -1,0 +1,4 @@
+---
+db_user: repmgr
+db_password: a_senha_do_user_repmgr
+db_name: repmgr
