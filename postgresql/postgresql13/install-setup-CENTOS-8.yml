@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: servidores
   become: yes
 
   vars_files:
